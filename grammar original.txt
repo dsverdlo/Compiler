@@ -1,9 +1,3 @@
-import ply.yacc as yacc
-
-import lexer # Import lexer information
-
-tokens = lexer.tokens # Need token list
-
 # one or more occurances
 def p_program(p):
     '''program : program declaration
@@ -44,12 +38,16 @@ def p_var_declarations(p):
     
 def p_var_declaration(p):
     '''var_declaration : type NAME SEMICOLON '''
+    p[0] = [p[1], p[2] ]
+    
 
 def p_type(p):
     ''' type : INT
              | CHAR
              | type LBRACK exp RBRACK
     '''
+    if(len(p) == 2):
+        p[0] = p[1]
 
 # Editted to support zero-many ;statements
 def p_statements(p):
@@ -75,6 +73,8 @@ def p_lexp(p):
     '''lexp : var
             | lexp LBRACK exp RBRACK
     '''
+    if(len(p) == 2):
+        p[0] = p[1]
 
 #Editted to support empty pars
 def p_exp(p):
@@ -99,13 +99,14 @@ def p_binop(p):
 	     | GREATER
 	     | LESS
     '''
+    p[0] = p[1]
 
 def p_unop(p):
     '''unop : MINUS
             | NOT
     '''
 
-# Editted to support zero-many pars
+# Editted to support zero-many parse
 def p_pars(p):
     '''pars : pars COMMA exp
             | exp
@@ -113,7 +114,7 @@ def p_pars(p):
 
 def p_var(p):
     '''var : NAME '''
-    p[0] = ('NAME', p[1])
+    p[0] = p[1]
     
 def p_empty(p):
     '''empty : '''
@@ -123,54 +124,3 @@ def p_empty(p):
 def p_error(p):
     print 'Syntax error: ', p
  
-yacc.yacc() # Build the parser
-
-# Parsing rules
-
-precedence = [
-        ('nonassoc', '
-	('nonassoc', 'ELSE'),
-	('left',     'LBRACK', 'RBRACK'),
-	('nonassoc', 'NOT'),
-	('nonassoc', 'EQUAL', 'NEQUAL'),
-	('nonassoc', 'LESS', 'GREATER'),
-	('left',     'PLUS', 'MINUS'),
-	('left',     'TIMES', 'DIVIDE'),
-	('nonassoc', 'LENGTH'),
-	('nonassoc', 'RETURN'),
-
-]
-
-
-
-
-
-
-p1 = '''
-int f(int[1] a) {
-    char c;
-    int a1; // comment
-    int[12] a2;
-    c = 10;
-    a2[9] = 12;
-    return a2[9] > 5
-}
-'''
-
-p2 = '''
-int f(int[1] a, char b, int c) {
-    char d;
-    d = 'r'
-}
-'''
-
-p3 = '''
-char fun(int fp1, int fp2) {
-    return doSomething[5]
-} '''
-
-print "Program 1: ", yacc.parse(p1)
-print "Program 2: ", yacc.parse(p2)
-print "Program 3: ", yacc.parse(p3)
-
-
