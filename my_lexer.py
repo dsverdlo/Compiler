@@ -67,7 +67,9 @@ t_LBRACE    = r'\{'
 t_ASSIGN    = r'='
 t_MINUS     = r'\-'
 t_LESS      = r'<'
-t_ignore_COMMENT   = r'//.*'
+t_ignore_COMMENT    = r'//.*'
+t_ignore_MULTIPLE   = r'\/\*[\w\d\s]*\*\/' #r'\/\*(.|[\r\n])*\*\/'
+
 
 
 # A regular expression rule with some action code
@@ -115,8 +117,8 @@ return y = x > 66;
 else 'r'
 '''
 
-lexer.input(p)
-while True:
-    tok = lexer.token()
-    if not tok: break
-    print tok
+#lexer.input(p)
+#while True:
+#    tok = lexer.token()
+#    if not tok: break
+#    print tok

@@ -1,0 +1,56 @@
+def flatten_instructions(tree, lblmkr):
+    
+    def insert_before_statement(tree, node):
+        if(tree.parent.data == 'STATEMENTS'):
+            n = tree.parent.children.index(tree)
+            tree.parent.children.insert(n, node)
+            node.parent = tree.parent
+        else:
+            insert_before_statement(tree.parent, node)
+
+    def add_to_declarations(tree, node):
+        if(tree.parent.data == 'FUNCTION'):
+            declarations = tree.children[0]
+            declarations.ins_child(node)
+        else:
+            add_to_declarations(tree.parent, node)
+
+    if(type(tree) is Node):
+        if(tree.data == 'STATEMENTS'):
+            for child in tree.children:
+                flatten_instructions(child, lblmkr)
+            return tree
+        
+        for child in tree.children:
+            if(type(child) is Node):
+
+                # We have a node (tree) with a child that is a node (child)
+                # flatten if the child contains more expressions
+                for subchild in child.children:
+                    if(type(subchild) is Node):
+                        print " ; Flattening subchild: " + str(subchild) + " of node: " + str(child)
+                        tmpvar = lblmkr.getTempVar()
+
+                        decl = Node('var')
+                        decl.add_child('int') # char??
+                        decl.add_child(tmpvar)
+                        add_to_declarations(subchild, decl)
+                        print "--", decl.parent
+                        
+                        assign = Node('assign')
+                        assign.add_child(tmpvar)
+                        assign.add_child(subchild)
+                        insert_before_statement(child, assign)
+                        print "--", assign.parent
+                        
+                        i = child.children.index(subchild)
+                        child.children.remove(subchild)
+                        child.children.insert(i, tmpvar)
+                        
+                        print "--", subchild
+                        
+                        flatten_instructions(subchild, lblmkr)
+            
+        
+    return tree
+    

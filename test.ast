@@ -1,0 +1,1 @@
+(program: (FUNCTION: int, gggg, (fparams: (fparam: int, y)), (block: (variables: ), (STATEMENTS: (write: 5)))))
