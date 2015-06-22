@@ -14,8 +14,12 @@ def main():
 
     def execute(code, fileinname, fileoutname):
 
-        print "\n *** 1 Substituting nested instructions *** "
+        print "\n *** 1 Parsing the program *** "
         result = prsr.parse(code)
+
+        if(result is None):
+            print "\n !!! Errors found in program !!!"
+            return
 
         print "\n *** 2 Substituting nested instructions *** "
         flatten_instructions(result)
@@ -77,4 +81,6 @@ def main():
         process_file_or_code(sys.argv[1], os.getcwd() + os.path.altsep +  os. sys.argv[2])
 
 
-main()
+
+if __name__ == '__main__':
+    main()
