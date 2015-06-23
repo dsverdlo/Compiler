@@ -5,10 +5,10 @@ class Node(object):
         self.parent = parent
         if(parent != None):
             parent.add_child(self)
-    
+
     def is_empty(self):
         self.data == None
-        
+
     def add_child(self, obj):
         self.children.append(obj)
         if(type(obj) is Node):
@@ -25,10 +25,10 @@ class Node(object):
 ##            children += str(self.children.index(child)) + str(child) + ","
 ##        if(len(children) > 0):
 ##            children = children.rstrip(",")
-##            
+##
 ##        return "[node(" + self.data + ") children: (" + children + ")]";
 
-        
+
     def __eq__(self, node):
 
         # if they are not both nodes -- false
@@ -54,15 +54,15 @@ class Node(object):
 
 
 
-                    
+
     def __str__(self):
         return "<Node: " + self.toString() + ">"
-        
+
     def toString(self):
 
         if self.is_empty():
             return "(empty)"
-        
+
         sep = ", "
         children = ": "
         for child in self.children:
@@ -79,5 +79,25 @@ class Node(object):
         if(type(self.data) == type(Node(sep))):
             return "(" + self.data.toString() + children + ")"
         else:
-            
+
             return "(" + str(self.data) + children + ")"
+
+    def toFileString(self, offset = 0):
+
+        if self.is_empty():
+            return ""
+
+        pre = "\n"
+        count = offset
+        while count > 0:
+            pre += "|\t"
+            count -= 1
+
+        filestring = pre  +  self.data
+        for child in self.children:
+            if type(child) is Node:
+                filestring += child.toFileString(offset + 1)
+            else :
+                filestring += pre + "|\t" + str(child)
+
+        return filestring

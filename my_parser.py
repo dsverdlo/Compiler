@@ -12,21 +12,19 @@ tokens = lexer.tokens # Need token list
 # Parsing rules
 
 precedence = [
-        ('nonassoc', 'IF'),
-	('nonassoc', 'ELSE'),
-	('left',     'LBRACK', 'RBRACK'),
-	('nonassoc', 'NOT'),
-	('nonassoc', 'EQUAL', 'NEQUAL'),
-	('nonassoc', 'LESS', 'GREATER'),
-	('left',     'PLUS', 'MINUS'),
-	('left',     'TIMES', 'DIVIDE'),
-	('nonassoc', 'LENGTH'),
-	('nonassoc', 'RETURN'),
-
+    ('nonassoc'    , 'IF'),
+	('nonassoc'    , 'ELSE'),
+	('left'        , 'LBRACK', 'RBRACK'),
+    ('left'        , 'AND', 'OR'),
+	('nonassoc'    , 'NOT'),
+	('nonassoc'    , 'EQUAL', 'NEQUAL'),
+	('nonassoc'    , 'LESS', 'GREATER'),
+	('left'        , 'PLUS', 'MINUS'),
+	('left'        , 'TIMES', 'DIVIDE'),
+	('nonassoc'    , 'LENGTH'),
+	('nonassoc'    , 'RETURN'),
 ]
 
-
-# TAC = tac.Tac()
 
 # one or more occurances
 def p_program(p):
@@ -120,6 +118,7 @@ def p_var_declaration(p):
 def p_type(p):
     ''' type : INT
              | CHAR
+             | BOOLEAN
              | type LBRACK exp RBRACK
     '''
     if(len(p) == 2):
@@ -222,36 +221,43 @@ def p_exp(p):
     elif len(p) == 4:
         p[0] = p[2]
 
+def p_and(p):
+    '''exp : exp AND exp'''
+    p[0] = node.Node('and')
+    p[0].add_child(p[1])
+    p[0].add_child(p[3])
+
+def p_or(p):
+    '''exp : exp OR exp'''
+    p[0] = node.Node('or')
+    p[0].add_child(p[1])
+    p[0].add_child(p[3])
+
+
 def p_fun_call(p):
     '''exp : NAME LPAR RPAR
 	   | NAME LPAR pars RPAR
     '''
     p[0] = node.Node('fCall')
-    #print "I see a " + str(p[1])
     p[0].add_child(p[1])
     if len(p) == 5: # if there are pars: add them
-        #p[0].add_child(p[3])
         for c in p[3].children:
-            #print "Adding it, chillout ***"
             p[0].add_child(c)
-    else:
-        pass#p[0].add_child(node.Node()) # otherwise empty node
 
 
 def p_number(p):
     '''exp : NUMBER '''
-    #p[0] = node.Node('NUMBER')
-    #p[0].add_child(p[1])
-    p[0] = p[1]
+    p[0] = node.Node('NUMBER')
+    p[0].add_child(p[1])
+    #p[0] = p[1]
 
 def p_qchar(p):
     '''exp : QCHAR '''
-    #p[0] = node.Node('QCHAR')
-    #p[0].add_child(p[1])
-    p[0] = p[1]
+    p[0] = node.Node('QCHAR')
+    p[0].add_child(p[1]) #####
+    #p[0] = p[1]
 
 def p_binop_exp(p):
-    #''' exp : exp binop exp '''
     ''' exp : exp MINUS exp
             | exp PLUS exp
             | exp TIMES exp
@@ -260,6 +266,8 @@ def p_binop_exp(p):
             | exp NEQUAL exp
             | exp GREATER exp
             | exp LESS exp
+            | exp GREATEREQ exp
+            | exp LESSEQ exp
     '''
     p[0] = node.Node(p[2])
     p[0].add_child(p[1])
@@ -286,9 +294,16 @@ def p_pars(p):
 
 def p_var(p):
     '''var : NAME '''
-    #p[0] = node.Node('NAME')
-    #p[0].add_child(p[1])
+    p[0] = node.Node('var')
+    p[0].add_child(p[1])
+    #p[0] = p[1]
+
+
+def p_bool(p):
+    '''exp  : TRUE
+            | FALSE'''
     p[0] = p[1]
+
 
 def p_empty(p):
     '''empty : '''
@@ -308,187 +323,4 @@ parser = yacc.yacc() # Build the parser
 
 def parse(code):
     return parser.parse(code)
-
-p1 = '''
-int f(int[1] a) {
-    char c;
-    int a1; // comment
-    int[12] a2;
-    c = 10;
-    a2[9] = 12;
-    return a2[9] > 5
-}
-'''
-
-p2 = '''
-int big;
-int f(int[1] a, char b, int c) {
-    char d;
-    int a;
-    char b;
-
-    d = 'r';
-    b = d + 1;
-
-    return f(a, b, d);
-
-    unreachable = 4 + 5
-}
-int g() {
-   int second;
-   second = 2;
-   return second;
-   b = 5 - useless;
-   return again
-}
-'''
-
-p3 = '''
-char fun(int fp1) {
-    int counter;
-    counter = 1;
-    if(fp1 > counter) {
-        squareCounter(xxx, yyyy);
-        fp1 = fp - 1
-    };
-    return counter
-
-} '''
-
-p4 = '''
-int a;
-int fun() {
-    a[5] = b * c + b * c
-
-} '''
-
-p5 = '''
-int foo() {
-    int x;
-    int y;
-    x = 14;
-    y = 8 - x / 2;
-    x = 2;
-    return y * (28 / x + 2);
-    x = 5
-
-}
-'''
-p6 = '''
-int foo() {
-    z = 5 > 6
-}'''
-p7 = '''
-int foo() {
-    while(a<b) {
-        if(c<d) {
-           x = y + z
-        }
-    }
-}'''
-p8 = '''
-int ifff() {
-    if(cond1) {
-        return a
-    };
-    if(1 > 2) {
-        return 1
-    } else {
-        return 2
-    };
-    while(x > 0) {
-        x = x - 1
-    }
-}
-'''
-
-foldconst = '''
-int f(int j) {
-  int i;
-  i= 3;
-  if (j > 0)
-    i = 4
-  else
-    j = 1;
-  return i
-}
-
-int g(int j) {
-  int i;
-  i = 3;
-  if (j > 0)
-    j = j+1
-  else
-    j = -j;
-  return i
-}
-
-int
-main() {
- write f(2);
- write g(3)
-}
-'''
-
-ifeq = '''
-int main() {
-  int x;
-  int y;
-  x = (1 + 2) / 3;
-  write x;
-  return x;
-  write y
-}
-'''
-#print "Program 1: ", parser.parse(p1)
-#print "Program 2: ", parser.parse(p2)
-#print "Program 3: ", parser.parse(p3)
-
-#print "Program 4: ", parser.parse(p5).toString()
-#print "Optimise AST: ", backend.optimise(parser.parse(p5))
-#pp3 = parser.parse(p3)
-#backend.flatten_instructions(pp3, labelmaker())
-#backend.assemble(pp3)
-
-#addition = parser.parse(p6).children[0].children[3].children[1].children[0].children[1]
-#backend.assemble(addition)
-
-#fcall = parser.parse(p7).children[0].children[3].children[1].children[0]
-#backend.assemble(fcall)
-
-#iff = parser.parse(p8)
-#backend.assemble(iff)
-#backend.assemble(iff.children[0].children[2].children[1].children[0])
-#backend.assemble(iff.children[0].children[2].children[1].children[1])
-
-#fc = parser.parse(foldconst)
-#backend.assemble(fc)
-
-
-#ife = parser.parse(ifeq)
-
-#print " *** 1 Substituting nested instructions *** "
-#backend.flatten_instructions(ife, labelmaker())
-
-#print " *** 2 Optimising *** "
-#backend.optimise(ife)
-
-#print " *** 3 Printing results *** "
-#print ife
-#a = assembler()
-#a.assemble(ife)
-#a.write_to_file('test.asm')
-
-
-#ifebody = ife.children[0].children[3].children[1]
-#fcc = backend.flatten_instructions(ifebody, l)
-
-##fcc
-##print(parser.parse('''
-##char fname(int x, int y, int z) {
-##    x = 5 - 1; // noob
-##    return x
-##}
-##''')
-##)
 

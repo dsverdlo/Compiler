@@ -25,7 +25,8 @@ symbols = [
    'ASSIGN',
    'MINUS',
    'LESS',
-   'KEYWORD',
+   'LESSEQ',
+   'GREATEREQ',
 ]
 
 other = [
@@ -34,7 +35,7 @@ other = [
    'QCHAR',
    ]
 
-reserved = { 
+reserved = {
    'int'    :   'INT',
    'return' :   'RETURN',
    'else'   :   'ELSE',
@@ -44,6 +45,11 @@ reserved = {
    'if'     :   'IF',
    'read'   :   'READ',
    'length' :   'LENGTH',
+   'or'     :   'OR',
+   'and'    :   'AND',
+   'bool'   :   'BOOLEAN',
+   'true'   :   'TRUE',
+   'false'  :   'FALSE'
 }
 
 tokens = symbols + other + reserved.values()
@@ -67,15 +73,18 @@ t_LBRACE    = r'\{'
 t_ASSIGN    = r'='
 t_MINUS     = r'\-'
 t_LESS      = r'<'
+t_LESSEQ    = r'<='
+t_GREATEREQ = r'>='
 t_ignore_COMMENT    = r'//.*'
 t_ignore_MULTIPLE   = r'\/\*[\w\d\s]*\*\/' #r'\/\*(.|[\r\n])*\*\/'
 
-
+t_OR = 'or'
+t_AND = 'and'
 
 # A regular expression rule with some action code
 def t_NUMBER(t):
     r'\d+'
-    t.value = int(t.value)    
+    t.value = int(t.value)
     return t
 
 def t_KEYWORD(t):
@@ -109,16 +118,3 @@ def lex(input):
     return iter(lexer)
 
 
-
-
-p = '''
-x = 33 + 44;
-return y = x > 66;
-else 'r'
-'''
-
-#lexer.input(p)
-#while True:
-#    tok = lexer.token()
-#    if not tok: break
-#    print tok

@@ -1,1 +1,44 @@
-(program: (var: int, a))
+
+program
+|	var
+|	|	int
+|	|	a
+|	FUNCTION
+|	|	bool
+|	|	f
+|	|	fparams
+|	|	block
+|	|	|	variables
+|	|	|	|	var
+|	|	|	|	|	int
+|	|	|	|	|	_tmp_1
+|	|	|	STATEMENTS
+|	|	|	|	assign
+|	|	|	|	|	_tmp_1
+|	|	|	|	|	NUMBER
+|	|	|	|	|	|	1
+|	|	|	|	return
+|	|	|	|	|	_tmp_1
+|	FUNCTION
+|	|	int
+|	|	main
+|	|	fparams
+|	|	|	fparam
+|	|	|	|	bool
+|	|	|	|	b
+|	|	block
+|	|	|	variables
+|	|	|	|	var
+|	|	|	|	|	int
+|	|	|	|	|	_tmp_2
+|	|	|	STATEMENTS
+|	|	|	|	assign
+|	|	|	|	|	_tmp_2
+|	|	|	|	|	QCHAR
+|	|	|	|	|	|	g
+|	|	|	|	assign
+|	|	|	|	|	var
+|	|	|	|	|	|	a
+|	|	|	|	|	fCall
+|	|	|	|	|	|	main
+|	|	|	|	|	|	_tmp_2

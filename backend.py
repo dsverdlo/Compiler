@@ -18,21 +18,21 @@ def printt(*args):
     if VERBOSE:
         print args
 
-        
+
 def optimise(ast):
-    
+
     print "Optimising: dead code"
     optimise_dead_code(ast)
-    
+
     print "Optimising: constant folding"
     optimise_constant_fold(ast)
-    
+
     print "Optimising: common subexpression elimination"
     optimise_common_subexpression(ast)
 
     print "Optimising: var use"
     optimise_var_use(ast)
-    
+
     return ast
 
 
@@ -41,7 +41,7 @@ def optimise(ast):
 # To tmp_1 = y * 2
 #    x = tmp_1 + z
 def flatten_instructions(tree, lblmkr = None):
-    
+
     def insert_before_statement(tree, node):
         if not(type(tree.parent) is Node): return
         printt("\ins " + tree.toString())
@@ -65,7 +65,7 @@ def flatten_instructions(tree, lblmkr = None):
         if not(type(tree) is Node): return
 
         grabparent = node.parent
-        printt(" ; Flattening node: " + str(node) + " of: " + str(node.parent))
+        #print(" ; Flattening node: " + str(node) + " of: " + str(node.parent))
 
         tmpvar = lblmkr.getTempVar()
 
@@ -75,24 +75,24 @@ def flatten_instructions(tree, lblmkr = None):
         add_to_declarations(node, decl)
         printt("--", decl.parent)
 
-            
+
         assign = Node('assign')
         assign.add_child(tmpvar)
         #assign.add_child('placeholder')
         assign.add_child(node)
-        
-        
+
+
         insert_before_statement(grabparent, assign) # TODO remove one iteration?
         #print "--", assign.parent
-                        
+
         i = grabparent.children.index(node)
         grabparent.children.remove(node) # remove child
         grabparent.children.insert(i, tmpvar) # insert tmp var
 
-        print "Made a temp var [" + str(tmpvar) + "] which substitues: " + node.toString()
+        #print "Made a temp var [" + str(tmpvar) + "] which substitues: " + node.toString()
+        return node
 
 
-        
     def flatten_statement(tree): # tree is a statement at first
 
         if not(type(tree) is Node): return tree
@@ -101,9 +101,16 @@ def flatten_instructions(tree, lblmkr = None):
             for child in tree.children:
                 flatten_statement(child)
             return tree
-            
+
         if tree.data in ['if', 'while']:
+            if(type(tree.children[0]) is Node): # if condition is Node, flatten to bool
+                new = do_flattening(tree.children[0])
+                #print "Iter fLatten: ", new
+                flatten_statement(new)
+
             for block in tree.children[1:]: # ignore first child (condition)
+                # THEN / ELSE STATEMENTS can be 'exp' or 'block'
+                if(block.data != 'block'): continue
                 for stmt in block.children[1].children: # [1] is statements
                     printt( "** Found a nested stmt: ", stmt)
                     flatten_statement(stmt)
@@ -111,21 +118,22 @@ def flatten_instructions(tree, lblmkr = None):
 
         # Otherwise we can probably substitute some parts
         for child in tree.children:
-            if(type(child) is Node): # foreach child that is a node                       
-                #print "--", child   
-                do_flattening(child)                        
-                #print "--", child        
+            if(type(child) is Node): # foreach child that is a node
+                #print "--", child
+                do_flattening(child)
+                #print "--", child
                 flatten_statement(child) # iterate to go deeper
         return tree
-            
+
     if lblmkr == None:
 	lblmkr = labelmaker()
-	
+
     if(type(tree) is Node):
         if(tree.data == 'STATEMENTS'):
             for statement in tree.children:
                 #print "** Found a statement; ", statement
                 flatten_statement(statement)
+
                 return tree # done, no more iterating
         else:
             for child in tree.children:
@@ -133,8 +141,8 @@ def flatten_instructions(tree, lblmkr = None):
         return tree
     else:
         return tree# leaf node, do nothing
-    
-    
+
+
 
 
 
