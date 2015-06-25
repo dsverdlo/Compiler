@@ -1,3 +1,11 @@
+#-------------------------------------------------------------------------------
+# Name:         node.py
+# Purpose:      Abstraction layer for Abstract Syntax Tree Intermediate Repr.
+#
+# Author:       David Sverdlov
+# Course:       Compilers, june 2015
+#-------------------------------------------------------------------------------
+
 class Node(object):
     def __init__(self, data = None, parent = None ):
         self.data = data
@@ -19,18 +27,8 @@ class Node(object):
         if(type(obj) is Node):
             obj.parent = self
 
-##    def __str__(self):
-##        children = ""
-##        for child in self.children:
-##            children += str(self.children.index(child)) + str(child) + ","
-##        if(len(children) > 0):
-##            children = children.rstrip(",")
-##
-##        return "[node(" + self.data + ") children: (" + children + ")]";
-
 
     def __eq__(self, node):
-
         # if they are not both nodes -- false
         if(type(node) != type(self)):
             return False
@@ -53,7 +51,8 @@ class Node(object):
 
 
 
-
+    def is_leaf(self):
+        return self.data in ['NUMBER', 'VAR', 'QCHAR', 'BOOL']
 
     def __str__(self):
         return "<Node: " + self.toString() + ">"
@@ -81,6 +80,7 @@ class Node(object):
         else:
 
             return "(" + str(self.data) + children + ")"
+
 
     def toFileString(self, offset = 0):
 

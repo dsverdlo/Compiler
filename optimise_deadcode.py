@@ -1,3 +1,10 @@
+#-------------------------------------------------------------------------------
+# Name:         optimise_deadcode.py
+# Purpose:      Remove dead code, like stmts after return, unreachable code
+#
+# Author:       David Sverdlov
+# Course:       Compilers, june 2015
+#-------------------------------------------------------------------------------
 from node import *
 
 VERBOSE = True
@@ -5,7 +12,7 @@ def printt(*args):
     if VERBOSE:
         for a in args:
             print " - " + a
-        
+
 # right now only detects code after a return statement
 def flatten(x):
     result = []
@@ -18,7 +25,7 @@ def flatten(x):
 
 def optimise_dead_code(ast):
     dead_code = []
-    if (type(ast) in [str, int]) or ast.is_empty():
+    if not(type(ast) is Node) or ast.is_empty() or ast.is_leaf():
         #printt("Dropping ", ast)
         return dead_code
     else:
@@ -31,11 +38,11 @@ def optimise_dead_code(ast):
                     dead_code.append(child)
                     printt("Deleting dead code: " + child.toString())
                     ast.children.remove(child)
-                
+
             opt_child = optimise_dead_code(child)
             if(opt_child != []):
                 dead_code.append(opt_child)
-            
-                
+
+
     return flatten(dead_code)
 

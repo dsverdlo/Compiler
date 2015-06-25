@@ -1,3 +1,10 @@
+#-------------------------------------------------------------------------------
+# Name:         optimise_constfold.py
+# Purpose:      Fold and substitute constant values and constant variables
+#
+# Author:       David Sverdlov
+# Course:       Compilers, june 2015
+#-------------------------------------------------------------------------------
 from node import *
 
 VERBOSE = False
@@ -11,21 +18,21 @@ def printt(*args):
 def optimise_constant_fold(root, part = None):
     printt("Const folding: ", part)
     def replace_node(node, value):
-        print(" - Folding node: " + node.toString() + " by " + str(value))
+        printt(" - Folding node: {} by {}".format(node,value))
         i = node.parent.children.index(node)
         node.parent.children.remove(node)
         node.parent.children.insert(i, value)
+        value.parent = node.parent
 
     def children_ints(node):
         for child in node.children:
-            if not(type(child) is int):
+            if child.data != 'NUMBER':
                 return False
         return True
 
+
     def recursive_place(ast, ignore, var, value, stopnode):
-        printt("Searching for ["+str(var)+"] to ["+str(value)+"] in tree: " + str(ast))
         if (type(ast) == Node and not(stopnode.data)):
-            printt("-- node received: " + str(ast.data))
             if ast.data == var:
                 ast.data = value # leaf node
                 printt("LEAF NODE SWITCHED")
@@ -34,7 +41,6 @@ def optimise_constant_fold(root, part = None):
                 1+2
 
             for child in ast.children:
-                printt("--- recurception: " + str(child))
 
                 if(ignore in ast.children and
                    (ast.children.index(child) <= ast.children.index(ignore))):
@@ -42,7 +48,7 @@ def optimise_constant_fold(root, part = None):
                     continue
 
                 if(ast.data == 'assign' and child == var):
-                    printt("--- NEW ASSIGNMENT FOUND. STOP REPLACING ["+str(var)+"] by ["+str(value)+"]")
+                    printt("--- NEW ASSIGNMENT FOUND. STOP REPLACING ")
                     stopnode.data = True # stop mechanism
                     return
 
@@ -69,31 +75,52 @@ def optimise_constant_fold(root, part = None):
     if(part is None):
         part = root
 
-    if(type(part) == Node):
+    if(type(part) is Node):
         if (part.data == 'assign') and len(part.children) >= 2:
+
             var = part.children[0]
-            if type(part.children[1]) in [int, str]:
+            if part.children[1].is_leaf() and not(part.children[1].data == 'VAR'):
                 value = part.children[1]
                 printt("Got one: " + str(value))
                 recursive_place(root, part, var, value, Node(False))
-            #elif type(part.children[1]) is Node
+
 
             # replace binary instructions
         if part.data == '/' and children_ints(part):
-            replace_node(part, part.children[0] / part.children[1])
+            oldNumber1 = part.children[0].children[0]
+            oldNumber2 = part.children[1].children[0]
+            newNode = Node('NUMBER')
+            newNode.add_child(oldNumber1 / oldNumber2)
+            replace_node(part, newNode)
             optimise_constant_fold(part.parent.parent)
+
         elif part.data == '*' and children_ints(part):
-            replace_node(part, part.children[0] * part.children[1])
+            oldNumber1 = part.children[0].children[0]
+            oldNumber2 = part.children[1].children[0]
+            newNode = Node('NUMBER')
+            newNode.add_child(oldNumber1 * oldNumber2)
+            replace_node(part, newNode)
             optimise_constant_fold(part.parent.parent)
+
         elif part.data == '+' and children_ints(part):
-            replace_node(part, part.children[0] + part.children[1])
+            oldNumber1 = part.children[0].children[0]
+            oldNumber2 = part.children[1].children[0]
+            newNode = Node('NUMBER')
+            newNode.add_child(oldNumber1 + oldNumber2)
+            replace_node(part, newNode)
             optimise_constant_fold(part.parent.parent)
+
         elif part.data == '-' and children_ints(part):
-            replace_node(part, part.children[0] - part.children[1])
+            oldNumber1 = part.children[0].children[0]
+            oldNumber2 = part.children[1].children[0]
+            newNode = Node('NUMBER')
+            newNode.add_child(oldNumber1 - oldNumber2)
+            replace_node(part, newNode)
             optimise_constant_fold(part.parent.parent)
 
         else:
             for child in part.children:
-                optimise_constant_fold(part, child)
+                printt("Optimising child", part, '\n', child)
+                optimise_constant_fold(child)
     else:
-        printt("")
+        printt("else CF")

@@ -1,10 +1,9 @@
-#-------------------------------------------------------------------------------
-# Name:         typechecker.py
-# Purpose:      Provide functions to find and validate types
 #
-# Author:       David Sverdlov
-# Course:       Compilers, june 2015
-#-------------------------------------------------------------------------------
+# Type Checker functions
+#
+# We have to type check the following nodes:
+#
+# Assignment, function declarations, binary operations, Func calls, returns
 from node import *
 
 def type_check(node, errors):
@@ -21,17 +20,17 @@ def type_check(node, errors):
         fDecl = find_enclosing_fun(node)
         functionType = fDecl.children[0]
         if not returnType:
-            errors.append("Type check failed, no type found for variable: {}".format(returnValue))
+            print "Type check failed, no type found for variable: " + str(returnValue)
             return False
 
         if functionType == False:
-            errors.append("Type check failed, no type found for function " + fDecl.children[1])
+            print "Type check failed, no type found for function " + fDecl.children[1]
             return False
 
         if returnType == functionType:
             return True
 
-        errors.append("Type check failed, returning [" + str(returnType) +"] when function '"+ fDecl.children[1] + "' should return [" + str(functionType) + "]")
+        print "Type check failed, returning [" + str(returnType) +"] when function '"+ fDecl.children[1] + "' should return [" + str(functionType) + "]"
         return False
 
 
@@ -41,34 +40,34 @@ def type_check(node, errors):
         if lexpType == rexpType:
             return True
 
-        errors.append( "Type check failed, you tried assigning a [" + str(rexpType) + "] to variable " + str(node.children[0]) + " which has type [" + lexpType + "]")
+        print "Type check failed, you tried assigning a [" + str(rexpType) + "] to variable " + str(node.children[0]) + " which has type [" + lexpType + "]"
         return False
 
 
     elif node.data == 'fCall':
         funDecl = find_fun_decl(node, node.children[0])
         if not funDecl:
-            errors.append( "Type check failed, found no function with name: " + str(node.children[0]))
+            print "Type check failed, found no function with name: " + str(node.children[0])
             return False
         fparams = funDecl.children[2].children
 
         args = node.children[1:]
 
         if len(fparams) > len(args):
-            errors.append( "Type check failed, too few arguments specified for function call to: " + str(node.children[0]))
+            print "Type check failed, too few arguments specified for function call to: " + str(node.children[0])
             return False
         if len(fparams) < len(args):
-            errors.append( "Type check failed, too many arguments specified for function call to: " + str(node.children[0]))
+            print "Type check failed, too many arguments specified for function call to: " + str(node.children[0])
             return False
 
         for i in range(len(args)):
             argType = find_type_of_exp(args[i])
             fparamType = fparams[i].children[0]
             if not argType:
-                errors.append( "Type check failed, no type found for argument " + args[i].toString())
+                print "Type check failed, no type found for argument ", args[i].toString()
                 return False
             if argType != fparamType:
-                errors.append( "Type check failed, function '" + node.children[0] + "' expected a [" + str(fparamType) + "] as argNo " + str(i+1) + ", but a [" + str(argType) + "] was given")
+                print "Type check failed, function '" + node.children[0] + "' expected a [" + str(fparamType) + "] as argNo " + str(i+1) + ", but a [" + str(argType) + "] was given"
 
         return True
 
@@ -78,19 +77,19 @@ def type_check(node, errors):
         funStatements = node.children[3].children[1] # block > statements
         for stmt in funStatements.children:
             if stmt.data == 'return':
-                return type_check(stmt, errors)
+                return type_check(stmt)
         # no return found yet, add our own
         if funReturnType == 'void':
             returnNode = Node('return')
             returnNode.add_child('void')
             funStatements.add_child(returnNode)
         else:
-            errors.append( "Type check failed, no return statement found, while return type of "+funName+" is ["+funReturnType+"]")
+            print "Type check failed, no return statement found, while return type of "+funName+" is ["+funReturnType+"]"
             return False
         return True # we are good
     else:
         for c in node.children:
-            type_check(c, errors)
+            type_check(c)
     return True
 
 
@@ -109,7 +108,7 @@ def find_fun_decl(tree, funname):
     return find_fun_decl(tree.parent, funname)
 
 
-def find_type_of_exp(tree, errors = None):
+def find_type_of_exp(tree):
     if not type(tree) is Node:
         return type_check(tree)
 
@@ -117,26 +116,17 @@ def find_type_of_exp(tree, errors = None):
         return find_type_of_leaf(tree)
 
     if tree.data in ['+', '-', '*', '/', 'length']:
-        lexpType = find_type_of_exp(tree.children[0], errors)
-        rexpType = find_type_of_exp(tree.children[1], errors) # leaf
+        lexpType = find_type_of_leaf(tree.children[0])
+        rexpType = find_type_of_leaf(tree.children[1])
 
         # do potentional casting here
         if lexpType != 'int' or rexpType != 'int':
-            if not(errors is None):
-                errors.append("Type check failed, '"+str(tree.data)+"' operation requires two integers, given: ["+ str(lexpType) +"] and ["+str(rexpType)+"]")
-            else:
-                print "Type check failed, '"+str(tree.data)+"' operation requires two integers, given: ["+ str(lexpType) +"] and ["+str(rexpType)+"]"
+            print "Type check failed, '"+str(tree.data)+"' operation requires two integers, given: ["+ str(lexpType) +"] and ["+str(rexpType)+"]"
             return 'int'
         return 'int'
 
     if tree.data == 'fCall':
-        fun = find_fun_decl(tree, tree.children[0])
-        if type(fun) is Node:
-            return fun.children[0]
-        if errors != None:
-            errors.append("Type check failed, no function type found for: '"+str(tree.children[0])+"'")
-        else:
-            print "Type check failed, no function type found for: '"+str(tree.children[0])+"'"
+        return find_type_of_fun(tree.data, tree.children[0])
 
     if tree.data == 'array_access':
         return find_type_of_leaf(tree.children[0])

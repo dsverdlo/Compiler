@@ -1,3 +1,11 @@
+#-------------------------------------------------------------------------------
+# Name:         my_parser.py
+# Purpose:      Use PLY to define the parsing rules for valid (extended) TINY
+#
+# Author:       David Sverdlov
+# Course:       Compilers, june 2015
+#-------------------------------------------------------------------------------
+
 import yacc as yacc
 
 import my_lexer as lexer # Import lexer information
@@ -47,22 +55,46 @@ def p_declaration(p):
 
 # Editted to support zero-many formal parameters
 def p_fun_declaration(p):
-    '''fun_declaration : type NAME LPAR formal_pars RPAR block
-                       | type NAME LPAR RPAR block
+    '''fun_declaration : fun_type NAME LPAR formal_pars RPAR block SEMICOLON
+                       | fun_type NAME LPAR RPAR block SEMICOLON
     '''
-    if len(p) == 6:
-        #p[0] = ('FUN', (p[1], p[2]), p[3], p[4], p[5])
-        p[0] = node.Node('FUNCTION')
+    if len(p) == 7:
+        p[0] = node.Node('fDecl')
         p[0].add_child(p[1]) # type
         p[0].add_child(p[2]) # name
-        p[0].add_child(node.Node('fparams')) # todo work out
+        p[0].add_child(node.Node('fparams'))
         p[0].add_child(p[5]) # block
     else:
-        p[0] = node.Node('FUNCTION')
+        p[0] = node.Node('fDecl')
         p[0].add_child(p[1]) # type
         p[0].add_child(p[2]) # name
         p[0].add_child(p[4]) # fpars
         p[0].add_child(p[6]) # block
+
+
+def p_fun_type(p):
+    '''fun_type : VOID
+               | INT
+             | CHAR
+             | BOOLEAN
+    '''
+    p[0] = p[1]
+
+
+def p_type(p):
+    ''' type : INT
+             | CHAR
+             | BOOLEAN
+             | type LBRACK exp RBRACK
+    '''
+    if(len(p) == 2):
+        p[0] = p[1]
+    else:
+        p[0] = node.Node('ARRAY')
+        p[0].add_child(p[1])
+        p[0].add_child(p[3])
+
+
 
 # Editted
 def p_formal_pars(p):
@@ -91,7 +123,8 @@ def p_block(p):
     if len(p) == 4:
         p[0] = node.Node('block')
         p[0].add_child(p[2])
-    elif len(p) == 5:
+        p[0].add_child(node.Node('statements'))
+    elif len(p) == 5: # both present
         p[0] = node.Node('block')
         p[0].add_child(p[2])
         p[0].add_child(p[3])
@@ -103,30 +136,24 @@ def p_var_declarations(p):
     '''
     if len(p) == 3:
         p[2].ins_child(p[1])
-        #p[0].add_child(p[2])
         p[0] = p[2]
     else:
-        p[0] = node.Node('variables') #p[1]
+        p[0] = node.Node('varDecls')
 
 def p_var_declaration(p):
     '''var_declaration : type NAME SEMICOLON '''
-    p[0] = node.Node('var')
-    p[0].add_child(p[1])
-    p[0].add_child(p[2])
+    p[0] = node.Node('varDecl')
 
-
-def p_type(p):
-    ''' type : INT
-             | CHAR
-             | BOOLEAN
-             | type LBRACK exp RBRACK
-    '''
-    if(len(p) == 2):
-        p[0] = p[1]
+    if type(p[1]) is node.Node: # array declaration
+        p[0].add_child(p[1].children[0]) # type
+        p[0].add_child(p[2]) # name
+        p[0].add_child(p[1].children[1]) # size
     else:
-        p[0] = node.Node('array_index')
         p[0].add_child(p[1])
-        p[0].add_child(p[3])
+        p[0].add_child(p[2])
+
+
+
 
 # Editted to support zero-many ;statements
 def p_statements(p):
@@ -134,20 +161,12 @@ def p_statements(p):
                   | statement
     '''
     if len(p) == 2:
-        p[0] = node.Node('STATEMENTS')
+        p[0] = node.Node('statements')
         p[0].add_child(p[1])
     else:
         p[1].add_child(p[3])
         p[0] = p[1]
-##    ''' statements : statements statement
-##                   | statement SEMICOLON
-##    '''
-##    if p[2] == ';':
-##        p[0] = node.Node('STATEMENTS')
-##        p[0].add_child(p[1])
-##    else:
-##        p[1].add_child(p[2])
-##        p[0] = p[1]
+
 
 
 # Editted to support zero pars
@@ -170,11 +189,9 @@ def p_statement(p):
     elif len(p) == 4: # function call with no pars
         p[0] = node.Node('fCall')
         p[0].add_child(p[1])
-        p[0].add_child(node.Node()) # empty
     elif len(p) == 5: # function call
         p[0] = node.Node('fCall')
         p[0].add_child(p[1])
-        #p[0].add_child(p[3])
         for c in p[3].children:
             p[0].add_child(c)
     elif len(p) == 6: # while or if
@@ -189,8 +206,6 @@ def p_statement(p):
 
 def p_assign(p):
     '''statement : lexp ASSIGN exp'''
-    #p[0] = (p[2], p[1], p[3])
-    #print(TAC.genCopy(p[1], p[3]))
     p[0] = node.Node('assign')
     p[0].add_child(p[1])
     p[0].add_child(p[3])
@@ -216,7 +231,7 @@ def p_exp(p):
     if len(p) == 2:
         p[0] = p[1]
     elif len(p)== 3: # length or unary
-        p[0] = node.Node(p[1])#tokens.index(p[1]))
+        p[0] = node.Node(p[1])
         p[0].add_child(p[2])
     elif len(p) == 4:
         p[0] = p[2]
@@ -249,13 +264,11 @@ def p_number(p):
     '''exp : NUMBER '''
     p[0] = node.Node('NUMBER')
     p[0].add_child(p[1])
-    #p[0] = p[1]
 
 def p_qchar(p):
     '''exp : QCHAR '''
     p[0] = node.Node('QCHAR')
-    p[0].add_child(p[1]) #####
-    #p[0] = p[1]
+    p[0].add_child(p[1])
 
 def p_binop_exp(p):
     ''' exp : exp MINUS exp
@@ -294,21 +307,21 @@ def p_pars(p):
 
 def p_var(p):
     '''var : NAME '''
-    p[0] = node.Node('var')
+    p[0] = node.Node('VAR')
     p[0].add_child(p[1])
-    #p[0] = p[1]
 
 
 def p_bool(p):
     '''exp  : TRUE
             | FALSE'''
-    p[0] = p[1]
+    p[0] = node.Node('BOOL')
+    p[0].add_child(p[1])
 
 
 def p_empty(p):
     '''empty : '''
-    #pass
-    p[0]= node.Node()
+    pass # edit
+    #p[0]= node.Node()
 
 # Error rule for syntax errors
 def p_error(p):

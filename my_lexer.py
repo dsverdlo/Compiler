@@ -1,8 +1,10 @@
-# ------------------------------------------------------------
-# lexer.py
+#-------------------------------------------------------------------------------
+# Name:         my_lexer.py
+# Purpose:      Use PLY tools to tokenize the (extended) TINY language
 #
-# tokenizer for TinyC
-# ------------------------------------------------------------
+# Author:       David Sverdlov
+# Course:       Compilers, june 2015
+#-------------------------------------------------------------------------------
 import lex as lex
 
 # List of token names.   This is always required
@@ -49,7 +51,8 @@ reserved = {
    'and'    :   'AND',
    'bool'   :   'BOOLEAN',
    'true'   :   'TRUE',
-   'false'  :   'FALSE'
+   'false'  :   'FALSE',
+   'void'   :   'VOID',
 }
 
 tokens = symbols + other + reserved.values()

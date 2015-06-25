@@ -1,0 +1,5 @@
+ self.add('\t mov \t eax, '+ str(right.children[0])) # right operand!
+        self.add("\t push \t eax \t\t ; Push *right* operand on the stack")
+        self.add('\t mov \t eax, ' + str(left.children[0])) # left # TODO what if nodes
+        self.add("\t pop \t ebx \t\t ; Pop the *right* operand from the stack")
+        self.add("\t " + op + " \t eax, ebx \t\t ; Do the " + op + ", store result on stack")

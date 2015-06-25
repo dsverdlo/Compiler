@@ -1,44 +1,47 @@
 
 program
-|	var
-|	|	int
-|	|	a
-|	FUNCTION
-|	|	bool
-|	|	f
-|	|	fparams
-|	|	block
-|	|	|	variables
-|	|	|	|	var
-|	|	|	|	|	int
-|	|	|	|	|	_tmp_1
-|	|	|	STATEMENTS
-|	|	|	|	assign
-|	|	|	|	|	_tmp_1
-|	|	|	|	|	NUMBER
-|	|	|	|	|	|	1
-|	|	|	|	return
-|	|	|	|	|	_tmp_1
-|	FUNCTION
-|	|	int
+|	fDecl
+|	|	void
 |	|	main
 |	|	fparams
-|	|	|	fparam
-|	|	|	|	bool
-|	|	|	|	b
 |	|	block
-|	|	|	variables
-|	|	|	|	var
+|	|	|	varDecls
+|	|	|	statements
+|	|	|	|	fCall
+|	|	|	|	|	test
+|	|	|	|	|	NUMBER
+|	|	|	|	|	|	4
+|	|	|	|	return
+|	|	|	|	|	void
+|	fDecl
+|	|	void
+|	|	test
+|	|	fparams
+|	|	|	fparam
+|	|	|	|	int
+|	|	|	|	ii
+|	|	block
+|	|	|	varDecls
+|	|	|	|	varDecl
 |	|	|	|	|	int
-|	|	|	|	|	_tmp_2
-|	|	|	STATEMENTS
+|	|	|	|	|	x
+|	|	|	|	varDecl
+|	|	|	|	|	int
+|	|	|	|	|	_tmp_1
+|	|	|	statements
+|	|	|	|	read
+|	|	|	|	|	VAR
+|	|	|	|	|	|	x
 |	|	|	|	assign
-|	|	|	|	|	_tmp_2
-|	|	|	|	|	QCHAR
-|	|	|	|	|	|	g
-|	|	|	|	assign
-|	|	|	|	|	var
-|	|	|	|	|	|	a
-|	|	|	|	|	fCall
-|	|	|	|	|	|	main
-|	|	|	|	|	|	_tmp_2
+|	|	|	|	|	VAR
+|	|	|	|	|	|	_tmp_1
+|	|	|	|	|	+
+|	|	|	|	|	|	VAR
+|	|	|	|	|	|	|	x
+|	|	|	|	|	|	VAR
+|	|	|	|	|	|	|	ii
+|	|	|	|	write
+|	|	|	|	|	VAR
+|	|	|	|	|	|	_tmp_1
+|	|	|	|	return
+|	|	|	|	|	void

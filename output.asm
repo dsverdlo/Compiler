@@ -5,12 +5,60 @@
 ;
 ; Author David Sverdlov
 ;
-.globl _start
-.type _start, @function
-_start:
-	 call 	 main
-	 mov 	 EBX, 0
-	 mov 	 EAX, 1
-	 int 	 0x80
-	 push 	 int		 ; Push int on the stack
-	 push 	 a		 ; Push a on the stack
+; Assembled via: nasm.exe -f win32 gen.asm
+;
+; Linked via: gcc gen.obj driver.c asm_io.obj
+
+
+%include 'asm_io.inc'
+
+segment .data
+readint db 	"Enter an integer: ", 0
+readstr db 	"Enter a string: ", 0
+readchar db 	"Enter a char: ", 0
+
+segment .bss
+
+segment .code
+	global _asm_main
+;
+; FUNCTION DECLARATION: void _asm_main () {...}
+;
+; Offsets for formal parameters
+; Offsets for local variables 
+; START FUNCTION BODY
+_asm_main:
+	 enter 	 0,0 		; Routine: push ebp /  mov ebp,esp
+	 pusha
+	 push 	 dword 4
+	 call 	 test
+	 add 	 esp, 4 		; Remove pushed args from stack
+	 popa
+	 mov 	 eax, 0 		 ; return back to C
+	 leave 		; Routine: mov esp,ebp / pop ebp
+	 ret
+;
+; FUNCTION DECLARATION: void test (int ii,) {...}
+;
+; Offsets for formal parameters
+%define ii ebp+8 		; int ii
+; Offsets for local variables 
+%define x ebp-4 		; int x
+%define _tmp_1 ebp-8 		; int _tmp_1
+; START FUNCTION BODY
+test:
+	 enter 	 0,0 		; Routine: push ebp /  mov ebp,esp
+	 pusha
+	 mov 	 eax, readint 		; Printing string
+	 call 	 print_string
+	 call 	 read_int
+	 mov 	 [x], eax 		; Store read val
+	 mov 	 eax, [x] 		; Left operand
+	 add 	 eax, [ii] 		; add Right operand
+	 mov 	 [_tmp_1], eax 		; _tmp_1 = eax
+	 mov 	 eax, [_tmp_1]
+	 call 	 print_int
+	 popa
+	 mov 	 eax, 0 		 ; return back to C
+	 leave 		; Routine: mov esp,ebp / pop ebp
+	 ret
