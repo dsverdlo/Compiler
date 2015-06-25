@@ -104,9 +104,11 @@ def flatten_instructions(tree, lblmkr, errors):
             return tree
 
         if tree.data in ['if', 'while']:
-            if(type(tree.children[0]) is Node) and not(tree.children[0].is_leaf()):
-                new = do_flattening(tree.children[0])
-                flatten_statement(new)
+            cond = tree.children[0]
+            if(type(cond) is Node) and not(tree.children[0].is_leaf()): pass
+                # dont flatten conditions...
+                #new = do_flattening(tree.children[0])
+                #flatten_statement(new)
 
             for block in tree.children[1:]: # ignore first child (condition)
                 # THEN / ELSE STATEMENTS can be 'exp' or 'block'

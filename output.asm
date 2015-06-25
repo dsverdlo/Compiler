@@ -18,6 +18,7 @@ readstr db 	"Enter a string: ", 0
 readchar db 	"Enter a char: ", 0
 
 segment .bss
+_tmp_1	 resd 1
 
 segment .code
 	global _asm_main
@@ -26,38 +27,36 @@ segment .code
 ;
 ; Offsets for formal parameters
 ; Offsets for local variables 
+%define count ebp-4 		; int count
 ; START FUNCTION BODY
 _asm_main:
 	 enter 	 0,0 		; Routine: push ebp /  mov ebp,esp
 	 pusha
-	 push 	 dword 4
-	 call 	 test
-	 add 	 esp, 4 		; Remove pushed args from stack
-	 popa
-	 mov 	 eax, 0 		 ; return back to C
-	 leave 		; Routine: mov esp,ebp / pop ebp
-	 ret
-;
-; FUNCTION DECLARATION: void test (int ii,) {...}
-;
-; Offsets for formal parameters
-%define ii ebp+8 		; int ii
-; Offsets for local variables 
-%define x ebp-4 		; int x
-%define _tmp_1 ebp-8 		; int _tmp_1
-; START FUNCTION BODY
-test:
-	 enter 	 0,0 		; Routine: push ebp /  mov ebp,esp
-	 pusha
-	 mov 	 eax, readint 		; Printing string
-	 call 	 print_string
-	 call 	 read_int
-	 mov 	 [x], eax 		; Store read val
-	 mov 	 eax, [x] 		; Left operand
-	 add 	 eax, [ii] 		; add Right operand
+	 mov 	 eax, 5
+	 mov 	 [count], eax 		; count = 5
+L1_main: 		 ; Begin condition of while
+	 mov 	 eax, [count] 		
+	 cmp 	 eax, 0 
+	 jg 	 L3_main
+	 mov 	 eax, 0 		; Set EAX to false
+	 jmp 	 L4_main		; Jump over true
+L3_main:
+	 mov 	 eax, 1 		; Set EAX to true
+L4_main: 		; Allow false clause to jump over true clause
+	 cmp 	 eax, 0 		 ; Compare cond res with 0
+	 je 	 L2_main 		 ; End the while if false
+	 mov 	 eax, [count] 		; Left operand
+	 imul 	 eax, 5 		; imul Right operand
+	 mov 	 eax, eax
 	 mov 	 [_tmp_1], eax 		; _tmp_1 = eax
 	 mov 	 eax, [_tmp_1]
 	 call 	 print_int
+	 mov 	 eax, [count] 		; Left operand
+	 sub 	 eax, 1 		; sub Right operand
+	 mov 	 eax, eax
+	 mov 	 [count], eax 		; count = eax
+	 jmp 	 L1_main 		 ; Jump back to condition
+L2_main: 		 ; End while structure
 	 popa
 	 mov 	 eax, 0 		 ; return back to C
 	 leave 		; Routine: mov esp,ebp / pop ebp

@@ -1,15 +1,14 @@
 @echo off
-cls
 
 copy output.asm "C:\Program Files (x86)\CodeBlocks\MinGW\bin"
 
 cd "C:\Program Files (x86)\CodeBlocks\MinGW\bin"
 
-nasm.exe -f win32 gen.asm
+nasm.exe -f win32 output.asm
 
 echo NASMED 
 
-gcc gen.obj driver.c asm_io.obj 
+gcc output.obj driver.c asm_io.obj 
 
 echo GCCED 
 

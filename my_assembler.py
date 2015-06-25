@@ -30,8 +30,8 @@ class assembler(object):
 
         self.binops =  { '+' : 'add',
                     '-' : 'sub',
-                    '/' : 'div',
-                    '*' : 'mul',
+                    '/' : 'idiv',
+                    '*' : 'imul',
                     }
         self.conds = {'==' : 'je',
                  '!=' : 'jne',
@@ -81,7 +81,7 @@ class assembler(object):
         for line in self.code:
             self.assembly += "\n" + line
 
-        print self.assembly
+        #print self.assembly
 
     def process_print_string(self, name): # must be in data
         self.add('\t mov \t eax, {} \t\t; Printing string'.format(name))
@@ -173,7 +173,17 @@ class assembler(object):
 
         self.assemble_loop(funBody.children[1]) # assemble statements
 
-    def process_block(self, tree): pass
+    def process_block(self, tree):
+        variables = tree.children[0]
+
+        #self.assemble_loop(variables)
+        for v in variables.children:
+            label = self.add_bss(v.children[1])
+
+        stmts = tree.children[1]
+
+        for stmt in stmts.children:
+            self.assemble_loop(stmt)
 
 ##    def process_variable_declaration(self, tree):
 ##        varType = tree.children[0]
@@ -237,7 +247,12 @@ class assembler(object):
         op = self.binops.get(tree.data)
 
         self.add('\t mov \t eax, {} \t\t; Left operand'.format(leftvalue))
-        self.add('\t {0} \t eax, {1} \t\t; {0} Right operand'.format(op, rightvalue))
+        if op == 'imul':
+            #self.add('\t mov \t ebx, {} \t\t ; Right operand'.format(rightvalue))
+            self.add('\t {0} \t eax, {1} \t\t; {0} Right operand'.format(op, rightvalue))
+            #self.add('\t mov \t eax, ecx')
+        else:
+            self.add('\t {0} \t eax, {1} \t\t; {0} Right operand'.format(op, rightvalue))
 
         #If we execute the code to place the left operand in the accumulator register,
         # and then execute the code to place the right operand in the accumulator register,
@@ -249,7 +264,6 @@ class assembler(object):
 ##        self.add("\t " + op + " \t eax, ebx \t\t ; Do the " + op + ", store result on stack")
 
     def process_condition(self, tree, label = None):
-        print "COND", tree
         left = tree.children[0]
         if left.data == 'NUMBER':
             leftvalue = str(left.children[0])
@@ -280,12 +294,11 @@ class assembler(object):
             self.add(labelEnd+': \t\t; Allow false clause to jump over true clause')
 
     def process_assignment(self, tree):
-        print "\\\\\\", tree
         left = tree.children[0]
         right = tree.children[1]
         if not right.is_leaf():
             # if assingning value is a node, assemble that first, and result will be in EAX
-            print "SENDING", right
+
             self.assemble_loop(right)
             rightvalue = 'eax'
         else:
@@ -293,16 +306,24 @@ class assembler(object):
                 rightvalue = '[{}]'.format(right.children[0])
             else:
                 rightvalue = str(right.children[0])
-        self.add("\t mov \t [{0}], {1} \t\t; {0} = {1}".format(left.children[0], rightvalue))
+        self.add('\t mov \t eax, {}'.format(rightvalue))
+        self.add("\t mov \t [{0}], eax \t\t; {0} = {1}".format(left.children[0], rightvalue))
 
     def process_assignment_array(self, tree): pass
 
     def process_if_then(self, tree):
+        self.add('; Begin IF THEN')
         # needs to jump over then clause child[2] so we need a label
         endlabel = self.labels.getLabel()
-        self.assemble_loop(tree.children[0]) # cond
-        self.add( "\t pop \t eax \t\t ; Pop value on the top of stack")
-        self.add( "\t cmp \t eax, 0 \t\t ; Compare expr with 0")
+        cond = tree.children[0]
+        if cond.data == 'BOOL':
+            condvalue = '{}'.format((cond.children[0] == 'true') + 0)
+        else:
+            condvalue = '[{}]'.format(cond.children[0])
+
+        #self.assemble_loop(tree.children[0]) # cond
+        self.add( "\t mov \t eax, "+condvalue+" \t\t ; Pop value on the top of stack")
+        self.add( "\t cmp \t eax, 0 \t\t ; Compare cond with 0")
         self.add( "\t jne \t " + endlabel + " \t\t ; Jump if popped value is not false")
         self.assemble_loop(tree.children[1]) # then
         self.add( endlabel + ": \t\t ; End if-then structure")

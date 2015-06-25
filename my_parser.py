@@ -178,7 +178,7 @@ def p_statement(p):
 		 | NAME LPAR RPAR
 		 | NAME LPAR pars RPAR
 		 | WHILE LPAR exp RPAR statement
-		 | IF LPAR exp RPAR statement
+		 | IF    LPAR exp RPAR statement
 		 | IF LPAR exp RPAR statement ELSE statement
     '''
     if len(p) == 2:
