@@ -13,7 +13,8 @@ def printt(*args):
         for a in args:
             print " - " + a
 
-# right now only detects code after a return statement
+# right now only detects code after a return statement,
+# expand with double assignment removal x=2; x=3
 def flatten(x):
     result = []
     for el in x:
@@ -26,7 +27,6 @@ def flatten(x):
 def optimise_dead_code(ast):
     dead_code = []
     if not(type(ast) is Node) or ast.is_empty() or ast.is_leaf():
-        #printt("Dropping ", ast)
         return dead_code
     else:
         return_found = False

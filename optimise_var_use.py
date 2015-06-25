@@ -24,6 +24,7 @@ def optimise_var_use(ast):
             if node.data == 'assign':
                 children = node.children[1:]
 
+
             for child in children:
                 if type(child) is Node:
                     if check_variable(child, var):

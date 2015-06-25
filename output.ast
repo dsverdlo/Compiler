@@ -8,43 +8,31 @@ program
 |	|	|	varDecls
 |	|	|	|	varDecl
 |	|	|	|	|	int
-|	|	|	|	|	count
+|	|	|	|	|	a
+|	|	|	|	|	NUMBER
+|	|	|	|	|	|	10
+|	|	|	|	varDecl
+|	|	|	|	|	int
+|	|	|	|	|	_tmp_1
 |	|	|	statements
 |	|	|	|	assign
-|	|	|	|	|	VAR
-|	|	|	|	|	|	count
+|	|	|	|	|	array_access
+|	|	|	|	|	|	VAR
+|	|	|	|	|	|	|	a
+|	|	|	|	|	|	NUMBER
+|	|	|	|	|	|	|	4
 |	|	|	|	|	NUMBER
 |	|	|	|	|	|	5
-|	|	|	|	while
-|	|	|	|	|	>
+|	|	|	|	assign
+|	|	|	|	|	VAR
+|	|	|	|	|	|	_tmp_1
+|	|	|	|	|	array_access
 |	|	|	|	|	|	VAR
-|	|	|	|	|	|	|	count
+|	|	|	|	|	|	|	a
 |	|	|	|	|	|	NUMBER
-|	|	|	|	|	|	|	0
-|	|	|	|	|	block
-|	|	|	|	|	|	varDecls
-|	|	|	|	|	|	|	varDecl
-|	|	|	|	|	|	|	|	int
-|	|	|	|	|	|	|	|	_tmp_1
-|	|	|	|	|	|	statements
-|	|	|	|	|	|	|	assign
-|	|	|	|	|	|	|	|	VAR
-|	|	|	|	|	|	|	|	|	_tmp_1
-|	|	|	|	|	|	|	|	*
-|	|	|	|	|	|	|	|	|	VAR
-|	|	|	|	|	|	|	|	|	|	count
-|	|	|	|	|	|	|	|	|	NUMBER
-|	|	|	|	|	|	|	|	|	|	5
-|	|	|	|	|	|	|	write
-|	|	|	|	|	|	|	|	VAR
-|	|	|	|	|	|	|	|	|	_tmp_1
-|	|	|	|	|	|	|	assign
-|	|	|	|	|	|	|	|	VAR
-|	|	|	|	|	|	|	|	|	count
-|	|	|	|	|	|	|	|	-
-|	|	|	|	|	|	|	|	|	VAR
-|	|	|	|	|	|	|	|	|	|	count
-|	|	|	|	|	|	|	|	|	NUMBER
-|	|	|	|	|	|	|	|	|	|	1
+|	|	|	|	|	|	|	4
+|	|	|	|	write
+|	|	|	|	|	VAR
+|	|	|	|	|	|	_tmp_1
 |	|	|	|	return
 |	|	|	|	|	void

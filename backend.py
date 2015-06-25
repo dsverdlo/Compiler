@@ -28,8 +28,8 @@ def optimise(ast):
     print "Optimising: constant folding"
     optimise_constant_fold(ast)
 
-    print "Optimising: common subexpression elimination"
-    optimise_common_subexpression(ast)
+    #print "Optimising: common subexpression elimination"
+    #optimise_common_subexpression(ast)
 
     print "Optimising: var use"
     optimise_var_use(ast)

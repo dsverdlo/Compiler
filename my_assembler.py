@@ -69,11 +69,13 @@ class assembler(object):
         self.data.append(name+' db \t"'+string+'", 0')
 
     def generate(self):
-        self.assembly += "\n\nsegment .data"
+        self.assembly += "\n; Initialized data"
+        self.assembly += "\nsegment .data"
         for line in self.data:
             self.assembly += "\n" + line
 
-        self.assembly += "\n\nsegment .bss"
+        self.assembly += "\n; Uninitialized data"
+        self.assembly += "\nsegment .bss"
         for inp in self.bss:
             self.assembly += "\n" + inp
 
@@ -107,7 +109,7 @@ class assembler(object):
             self.add('\t call \t print_int')
 
         elif tree.data == 'BOOL':
-            self.add('\t mov \t eax, {} '.format(int(tree.children[0])))
+            self.add('\t mov \t eax, {} '.format((tree.children[0]=='true')+0))
             self.add('\t call \t print_int')
 
         elif tree.data == 'QCHAR':
@@ -184,12 +186,6 @@ class assembler(object):
 
         for stmt in stmts.children:
             self.assemble_loop(stmt)
-
-##    def process_variable_declaration(self, tree):
-##        varType = tree.children[0]
-##        varName = tree.children[1]
-##        #i = tree.parent.children.index(tree)
-##        self.add_bss(varName)
 
     def process_var_decls(self, tree):
         self.add("; Offsets for local variables ")
@@ -304,12 +300,18 @@ class assembler(object):
         else:
             if right.data == 'VAR':
                 rightvalue = '[{}]'.format(right.children[0])
+            elif right.data == 'BOOL':
+                rightvalue = (right.children[0]=='true')+0
             else:
-                rightvalue = str(right.children[0])
+                rightvalue = right.children[0]
         self.add('\t mov \t eax, {}'.format(rightvalue))
         self.add("\t mov \t [{0}], eax \t\t; {0} = {1}".format(left.children[0], rightvalue))
 
     def process_assignment_array(self, tree): pass
+##        print "####",tree
+##        arr = tree.children[0]
+##        segment = '{} resd {}'.format(arr.children[0].children[0], arr.children[1].children[0])
+##        self.bss.append(segment)
 
     def process_if_then(self, tree):
         self.add('; Begin IF THEN')
